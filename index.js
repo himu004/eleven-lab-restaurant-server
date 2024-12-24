@@ -1,7 +1,9 @@
+
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-require("dotenv").config();
+
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -26,6 +28,20 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     console.log('Connected to MONGODB successfully');
+
+    // MY DATABASE
+    const db = client.db("eleven-lab-restaurant");
+    const foodsCollection = db.collection("foods");
+
+    // Add Foods Api
+    app.post('/add-food', async (req, res) => {
+      const food = req.body;
+      const result = await foodsCollection.insertOne(food);
+      res.send(result);
+    });
+
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
