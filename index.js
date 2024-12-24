@@ -53,14 +53,21 @@ async function run() {
         const result = await foodsCollection.findOne(query);
         res.send(result);
       });
-  
-      // Get Top foods by highest purchase count
-      app.get('/top-foods', async (req, res) => {
-        const query = { purchase_count: { $gt: 0 } };
-        const result = await foodsCollection.find(query).sort({ purchaseCount: -1 }).limit(6).toArray();
+    
+    // API FOR ONLY 6 FOODS
+    app.get('/top-foods', async (req, res) => {
+        // const query = { purchase_count: { $gt: 0 } };
+        const result = await foodsCollection.find({}).limit(6).toArray();
         res.send(result);
       });
-    
+
+    //   Implement Search Api
+    app.get('/search', async (req, res) => {
+        const search = req.query.search;
+        const query = { name: { $regex: search, $options: "i" } };
+        const result = await foodsCollection.find(query).toArray();
+        res.send(result);
+      });
 
 
 
