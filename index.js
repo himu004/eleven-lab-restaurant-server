@@ -46,7 +46,20 @@ async function run() {
       res.send(result);
     });
 
-    
+    // Get Single Food Api
+    app.get('/food/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await foodsCollection.findOne(query);
+        res.send(result);
+      });
+  
+      // Get Top foods by highest purchase count
+      app.get('/top-foods', async (req, res) => {
+        const query = { purchase_count: { $gt: 0 } };
+        const result = await foodsCollection.find(query).sort({ purchaseCount: -1 }).limit(6).toArray();
+        res.send(result);
+      });
     
 
 
