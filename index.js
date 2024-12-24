@@ -40,6 +40,15 @@ async function run() {
       res.send(result);
     });
 
+    // Get All Foods Api
+    app.get('/all-foods', async (req, res) => {
+      const result = await foodsCollection.find({}).toArray();
+      res.send(result);
+    });
+
+    
+    
+
 
 
   } finally {
