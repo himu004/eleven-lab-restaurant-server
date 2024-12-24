@@ -63,8 +63,8 @@ async function run() {
 
     //   Implement Search Api
     app.get('/search', async (req, res) => {
-        const search = req.query.search;
-        const query = { name: { $regex: search, $options: "i" } };
+        const search = req.query.search || "";
+        const query = { name: { $regex: search.toString(), $options: "i" } };
         const result = await foodsCollection.find(query).toArray();
         res.send(result);
       });
