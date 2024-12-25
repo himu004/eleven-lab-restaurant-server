@@ -84,8 +84,10 @@ async function run() {
           name: food.name,
           price: food.price,
           category: food.category,
-          image: food.image,
+          image: food.imageUrl,
           description: food.description,
+          quantity: food.quantity,
+          origin: food.origin,
         },
       };
       const result = await foodsCollection.updateOne(query, updateDoc, options);
