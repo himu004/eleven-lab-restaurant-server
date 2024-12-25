@@ -69,6 +69,33 @@ async function run() {
         res.send(result);
       });
 
+    //   My Foods Api Filtered by Email
+    app.get('/my-foods/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = { 'addedBy.email': email };
+        const result = await foodsCollection.find(query).toArray();
+        res.send(result);
+      });
+
+    //  Update Foods Api
+    app.put('/update-food/:id', async (req, res) => {
+        const id = req.params.id;
+        const food = req.body;
+        const query = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            name: food.name,
+            price: food.price,
+            category: food.category,
+            image: food.image,
+            description: food.description,
+          },
+        };
+        const result = await foodsCollection.updateOne(query, updateDoc, options);
+        res.send(result);
+    }) 
+
 
 
   } finally {
