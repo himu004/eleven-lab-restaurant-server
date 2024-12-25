@@ -53,7 +53,7 @@ async function run() {
     // API FOR ONLY 6 FOODS
     app.get("/top-foods", async (req, res) => {
       const query = { purchase_count: { $gt: 0 } };
-      const result = await foodsCollection.find(query).limit(6).toArray();
+      const result = await foodsCollection.find(query).sort({ purchase_count: -1 }).limit(6).toArray();
       res.send(result);
     });
 
@@ -118,45 +118,23 @@ async function run() {
       res.send(result);
     });
 
-    // Food Purchase Api
-    // app.post('/food-purchase', async (req, res) => {
-    //     const purchase = req.body;
-    //     const { foodId, userEmail, quantity } = purchase;
+    // Get Food Purchase Api by Email
+    app.get("/food-purchase/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { buyerEmail : email };
+      const result = await purchaseCollection.find(query).toArray();
+      res.send(result);
+    });
 
-    //     // Parse quantity to float
-    //     const parsedQuantity = parseFloat(quantity);
-    //     if (isNaN(parsedQuantity)) {
-    //         return res.status(400).send({ message: "Invalid quantity" });
-    //     }
+    // Delete MyOrder Api
+    app.delete("/my-order/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await purchaseCollection.deleteOne(query);
+      res.send(result);
+    });
 
-    //     // Find the food item
-    //     const food = await foodsCollection.findOne({ _id: new ObjectId(foodId) });
 
-    //     if (!food) {
-    //         return res.status(404).send({ message: "Food item not found" });
-    //     }
-
-    //     // Check if the user who added the food is trying to purchase it
-    //     if (food.addedBy.email === userEmail) {
-    //         return res.status(400).send({ message: "You cannot purchase your own food item" });
-    //     }
-
-    //     // Check if the food quantity is available
-    //     if (food.quantity <= 0 || food.quantity < parsedQuantity) {
-    //         return res.status(400).send({ message: "Insufficient food quantity" });
-    //     }
-
-    //     // Update the food's purchase count and quantity
-    //     await foodsCollection.updateOne(
-    //         { _id: new ObjectId(foodId) },
-    //         { $inc: { purchase_count: parsedQuantity, quantity: -parsedQuantity } }
-    //     );
-
-    //     // Insert the purchase record
-    //     const result = await purchaseCollection.insertOne(purchase);
-    //     res.send(result);
-    //     // console.log(result);
-    // });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
