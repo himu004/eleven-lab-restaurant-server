@@ -11,10 +11,7 @@ const app = express();
 // Middlewares
 app.use(
   cors({
-    origin: [
-      "https://eleven-lab-restaurant.netlify.app/",
-      "http://localhost:3000",
-    ],
+    origin: ["http://localhost:5173", "https://eleven-lab-restaurant.netlify.app"],
     credentials: true,
   })
 );
@@ -41,16 +38,28 @@ async function run() {
     const foodsCollection = db.collection("foods");
     const purchaseCollection = db.collection("purchase");
 
-    // Auth API
+    // Generate JWT API & Auth Related API
     app.post("/jwt", async (req, res) => {
-      const { email, password } = req.body;
+      const user = req.body;
 
-      const token = jwt.sign({ email: email, password: password }, process.env.ACCESS_TOKEN_SECRET, {
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1d",
       });
-      res.cookie("token", token, { httpOnly: true });
-      res.send({ success: true });
+      console.log(token);
+      res.cookie('token', token, { 
+        httpOnly: true,
+        secure: false, 
     });
+      res.send({success: true});
+      
+    });
+
+    app.post("/logout", (req, res) => {
+        res.clearCookie('token',{
+            httpOnly: true,
+            secure: false
+        }).send({success: true});
+    })
 
     
 
