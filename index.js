@@ -1,13 +1,25 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const port = process.env.PORT || 3000;
 const app = express();
 
-app.use(cors());
+// Middlewares
+app.use(
+  cors({
+    origin: [
+      "https://eleven-lab-restaurant.netlify.app/",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.30scn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -28,6 +40,19 @@ async function run() {
     const db = client.db("eleven-lab-restaurant");
     const foodsCollection = db.collection("foods");
     const purchaseCollection = db.collection("purchase");
+
+    // Auth API
+    app.post("/jwt", async (req, res) => {
+      const { email, password } = req.body;
+
+      const token = jwt.sign({ email: email, password: password }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+      res.cookie("token", token, { httpOnly: true });
+      res.send({ success: true });
+    });
+
+    
 
     // Add Foods Api
     app.post("/add-food", async (req, res) => {
@@ -53,7 +78,11 @@ async function run() {
     // API FOR ONLY 6 FOODS
     app.get("/top-foods", async (req, res) => {
       const query = { purchase_count: { $gt: 0 } };
-      const result = await foodsCollection.find(query).sort({ purchase_count: -1 }).limit(6).toArray();
+      const result = await foodsCollection
+        .find(query)
+        .sort({ purchase_count: -1 })
+        .limit(6)
+        .toArray();
       res.send(result);
     });
 
@@ -98,7 +127,7 @@ async function run() {
     app.post("/food-purchase", async (req, res) => {
       const purchase = req.body;
       const { foodId, quantity } = purchase;
-        const food = await foodsCollection.findOne({ _id: new ObjectId(foodId) });
+      const food = await foodsCollection.findOne({ _id: new ObjectId(foodId) });
       // Parse quantity to float
       const parsedQuantity = parseFloat(quantity);
 
@@ -123,7 +152,7 @@ async function run() {
     // Get Food Purchase Api by Email
     app.get("/food-purchase/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { buyerEmail : email };
+      const query = { buyerEmail: email };
       const result = await purchaseCollection.find(query).toArray();
       res.send(result);
     });
@@ -135,8 +164,6 @@ async function run() {
       const result = await purchaseCollection.deleteOne(query);
       res.send(result);
     });
-
-
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
