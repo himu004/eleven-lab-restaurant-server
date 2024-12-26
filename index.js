@@ -18,6 +18,20 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized Access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.30scn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -106,7 +120,7 @@ async function run() {
     //   My Foods Api Filtered by Email
     app.get("/my-foods/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { "addedBy.email": email };
+      const query = { "addedBy.email": email };  
       const result = await foodsCollection.find(query).toArray();
       res.send(result);
     });
