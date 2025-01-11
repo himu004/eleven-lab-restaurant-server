@@ -98,13 +98,13 @@ async function run() {
       res.send(result);
     });
 
-    // API FOR ONLY 6 FOODS
+    // API FOR ONLY 12 FOODS
     app.get("/top-foods", async (req, res) => {
       const query = { purchase_count: { $gt: 0 } };
       const result = await foodsCollection
         .find(query)
         .sort({ purchase_count: -1 })
-        .limit(6)
+        .limit(12)
         .toArray();
       res.send(result);
     });
